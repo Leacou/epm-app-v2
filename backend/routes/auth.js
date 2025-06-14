@@ -1,75 +1,79 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
-const router = express.Router();
 
-// 💡 Usa tu string de conexión aquí
-const uri = "mongodb+srv://epm-app-mongo:dnrvUY6MQj4CACpA@epm-app-mongo.xgka1gn.mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri);
+// Exporta una función que recibe la colección de usuarios
+module.exports = function(usersCollection) {
+  const router = express.Router();
 
-let usersCollection;
+  router.post('/login', async (req, res) => {
+    const {
+      fb_id, fb_email, fb_name, fb_picture,
+      accessToken,
+      ig_accounts
+    } = req.body;
 
-// Solo conectamos una vez al iniciar
-client.connect()
-  .then(() => {
-    const db = client.db('epm-app-mongo'); // Usa el nombre de tu base de datos
-    usersCollection = db.collection('users');
-    console.log('🟢 Conectado a MongoDB Atlas');
-  })
-  .catch(err => {
-    console.error('🔴 Error conectando a MongoDB Atlas', err);
-  });
+    console.log('---- POST /login ----');
+    console.log('Datos recibidos:', req.body);
 
-router.post('/login', async (req, res) => {
-  const {
-    fb_id, fb_email, fb_name, fb_picture,
-    accessToken,
-    ig_accounts
-  } = req.body;
-
-  if (!fb_id) return res.status(400).json({ ok: false, error: 'fb_id requerido' });
-
-  try {
-    // Buscar usuario existente
-    let user = await usersCollection.findOne({ fb_id });
-
-    if (user) {
-      // Actualiza usuario
-      await usersCollection.updateOne(
-        { fb_id },
-        { $set: {
-            fb_email, fb_name, fb_picture,
-            accessToken,
-            ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
-            updatedAt: new Date().toISOString()
-          }
-        }
-      );
-      user = await usersCollection.findOne({ fb_id });
-    } else {
-      // Crea nuevo usuario
-      user = {
-        fb_id, fb_email, fb_name, fb_picture,
-        accessToken,
-        ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await usersCollection.insertOne(user);
+    if (!fb_id) {
+      console.log('Falta fb_id, envío 400');
+      return res.status(400).json({ ok: false, error: 'fb_id requerido' });
     }
 
-    res.json({ ok: true, user });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: 'Error accediendo a MongoDB', details: err.message });
-  }
-});
+    try {
+      let user = await usersCollection.findOne({ fb_id });
+      console.log('Usuario encontrado:', user);
 
-router.get('/all', async (req, res) => {
+      if (user) {
+        // Actualiza usuario
+        const updateResult = await usersCollection.updateOne(
+          { fb_id },
+          { $set: {
+              fb_email, fb_name, fb_picture,
+              accessToken,
+              ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+              updatedAt: new Date().toISOString()
+            }
+          }
+        );
+        console.log('Resultado updateOne:', updateResult);
+        user = await usersCollection.findOne({ fb_id });
+        console.log('Usuario después de update:', user);
+      } else {
+        // Crea nuevo usuario
+        user = {
+          fb_id, fb_email, fb_name, fb_picture,
+          accessToken,
+          ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        const insertResult = await usersCollection.insertOne(user);
+        console.log('Resultado insertOne:', insertResult);
+        console.log('Usuario insertado:', user);
+      }
+
+      // Conteo final para ver si realmente hay documentos
+      const total = await usersCollection.countDocuments();
+      console.log('Total de usuarios en la colección:', total);
+
+      res.json({ ok: true, user });
+    } catch (err) {
+      console.error('Error en /login:', err);
+      res.status(500).json({ ok: false, error: 'Error accediendo a MongoDB', details: err.message });
+    }
+  });
+
+  // Endpoint opcional para debug (elíminalo en producción)
+  router.get('/all', async (req, res) => {
     try {
       const users = await usersCollection.find().toArray();
+      console.log('GET /all - cantidad de usuarios:', users.length);
       res.json(users);
     } catch (err) {
+      console.error('Error en /all:', err);
       res.status(500).json({ ok: false, error: 'Error accediendo a la base', details: err.message });
     }
   });
 
-module.exports = router;
+  return router;
+}

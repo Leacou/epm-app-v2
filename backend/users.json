@@ -1,0 +1,11 @@
+[
+  {
+    "fb_id": "12345",
+    "fb_email": "prueba2@fb.com",
+    "fb_name": "Usuario Prueba",
+    "fb_picture": "https://fb.com/prueba.jpg",
+    "accessToken": "abc123",
+    "createdAt": "2025-06-14T19:10:31.805Z",
+    "updatedAt": "2025-06-14T19:45:33.460Z"
+  }
+]
