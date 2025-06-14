@@ -6,14 +6,16 @@ const AccountSelector = () => {
   const [fbProfile, setFbProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tokenChecked, setTokenChecked] = useState(false);
 
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
-      setError("No se encontró access token. Por favor, inicia sesión.");
-      setLoading(false);
+      // Redirige si no hay token (previene loops y UX confusa)
+      window.location.replace("/");
       return;
     }
+    setTokenChecked(true);
 
     // 1. Traer perfil de Facebook
     const fbFields = "id,name,email,picture";
@@ -49,6 +51,8 @@ const AccountSelector = () => {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  if (!tokenChecked) return null; // Evita parpadeo antes de decidir si hay token
 
   return (
     <div style={{ maxWidth: 400, margin: "0 auto" }}>

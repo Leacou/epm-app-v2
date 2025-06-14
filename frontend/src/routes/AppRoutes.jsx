@@ -11,6 +11,7 @@ export default function AppRoutes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/accounts" element={<AccountSelector />} />
         {/* Más rutas a futuro */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
