@@ -7,10 +7,14 @@ function getUnixDateNDaysAgo(n) {
   export default async function getLast30DaysReport() {
     const userToken = localStorage.getItem('epm_access_token');
     const igProfileRaw = localStorage.getItem('epm_instagram_profile');
+    console.log('[getLast30DaysReport] Token:', userToken);
+    console.log('[getLast30DaysReport] Raw Instagram Profile:', igProfileRaw);
+  
     let igProfile;
     try {
       igProfile = JSON.parse(igProfileRaw);
     } catch (e) {
+      console.log('[getLast30DaysReport] Error al parsear el perfil IG:', e);
       throw new Error('Perfil de Instagram no válido');
     }
     if (!userToken || !igProfile) throw new Error('Tokens no disponibles');
@@ -22,14 +26,12 @@ function getUnixDateNDaysAgo(n) {
   
     const igId = igProfile.ig_id || igProfile.id;
     const days = 30;
-    // Array con los últimos 30 días, del más antiguo al más reciente
     const today = new Date();
     const daysArray = Array.from({length: days}, (_, idx) => {
       const since = new Date(today);
       since.setDate(today.getDate() - (days - idx));
       const until = new Date(since);
       until.setDate(since.getDate() + 1);
-      // Formatea fecha YYYY-MM-DD
       const pad = n => n.toString().padStart(2, '0');
       const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
       return {
@@ -39,36 +41,41 @@ function getUnixDateNDaysAgo(n) {
       };
     });
   
-    // Consulta la API para cada día
+    console.log('[getLast30DaysReport] daysArray:', daysArray);
+  
     const fetchDay = async ({sinceUnix, untilUnix, date}) => {
       const endpoint = `https://graph.facebook.com/v20.0/${igId}/insights?metric=${metrics.join(',')}&period=day&since=${sinceUnix}&until=${untilUnix}&metric_type=total_value&access_token=${userToken}`;
-      const response = await fetch(endpoint);
-      if (!response.ok) {
-        // Si la API falla para un día, devuelve vacío para ese día
+      console.log(`[getLast30DaysReport][${date}] Fetching URL:`, endpoint);
+      try {
+        const response = await fetch(endpoint);
+        console.log(`[getLast30DaysReport][${date}] Response status:`, response.status, 'OK?', response.ok);
+        const data = await response.json();
+        console.log(`[getLast30DaysReport][${date}] API response:`, data);
+        const obj = { date };
+        if (Array.isArray(data.data)) {
+          metrics.forEach(metricName => {
+            const metricData = data.data.find(x => x.name === metricName);
+            if (metricData?.total_value?.value !== undefined && metricData?.total_value?.value !== null) {
+              obj[metricName] = metricData.total_value.value;
+            } else {
+              obj[metricName] = null;
+            }
+          });
+        }
+        return obj;
+      } catch (err) {
+        console.log(`[getLast30DaysReport][${date}] ERROR:`, err);
         return { date };
       }
-      const data = await response.json();
-      // data.data es un array de métricas para ese día
-      const obj = { date };
-      if (Array.isArray(data.data)) {
-        metrics.forEach(metricName => {
-          const metricData = data.data.find(x => x.name === metricName);
-          // Busca el valor de la métrica para ese día
-          if (metricData?.total_value?.value !== undefined && metricData?.total_value?.value !== null) {
-            obj[metricName] = metricData.total_value.value;
-          } else {
-            obj[metricName] = null;
-          }
-        });
-      }
-      return obj;
     };
   
-    // Ejecuta las consultas en paralelo (Promise.all)
     const results = await Promise.all(daysArray.map(fetchDay));
+    console.log('[getLast30DaysReport] Results before filtering:', results);
   
-    // Filtra días sin ninguna métrica (puede pasar si la cuenta es nueva o hay un error)
-    const filtered = results.filter(row => metrics.some(m => row[m] !== null && row[m] !== undefined));
+    const filtered = results.filter(row =>
+      metrics.some(m => row[m] !== null && row[m] !== undefined)
+    );
   
+    console.log('[getLast30DaysReport] Filtered chart data:', filtered);
     return filtered;
   }
