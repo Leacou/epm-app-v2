@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useFacebookLogin } from "/frontend/src/hooks/useFacebookLogin";
-import AppLayout from "/frontend/src/componentss/AppLayout";
+import { useFacebookLogin } from "../../hooks/useFacebookLogin";
+import AppLayout from "../../components/AppLayout";
 import {
   Box,
   Card,
