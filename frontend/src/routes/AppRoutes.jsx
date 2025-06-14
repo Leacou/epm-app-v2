@@ -11,6 +11,7 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/accounts" element={<AccountSelector />} />
+        <Route path="/user-home" element={<UserHome />} /> {/* NUEVA RUTA */}
         {/* Más rutas a futuro */}
         <Route path="*" element={<NotFound />} />
       </Routes>

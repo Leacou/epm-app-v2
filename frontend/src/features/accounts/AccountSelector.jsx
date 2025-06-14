@@ -15,9 +15,13 @@ import {
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Accounts() {
   const { loading, error, fbProfile, igProfile, login } = useFacebookLogin();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     login();
@@ -74,6 +78,11 @@ export default function Accounts() {
                     bgcolor: "background.paper",
                   }}
                   // onClick={() => { /* Aquí puedes manejar la selección y navegación */ }}
+                  onClick={() => {
+                    // Guarda la cuenta seleccionada y navega
+                    localStorage.setItem('epm_instagram_profile', JSON.stringify(ig));
+                    navigate('/user-home');
+                  }}
                 >
                   <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                     <Avatar
