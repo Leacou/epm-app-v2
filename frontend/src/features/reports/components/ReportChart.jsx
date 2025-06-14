@@ -5,7 +5,7 @@ import {
 
 // Lista de métricas a mostrar con colores
 const metrics = [
-  { key: 'impressions', label: 'Impresiones', color: '#8884d8' },
+  { key: 'views', label: 'Impresiones', color: '#8884d8' },
   { key: 'reach', label: 'Alcance', color: '#82ca9d' },
   { key: 'profile_views', label: 'Vistas Perfil', color: '#ffc658' },
   { key: 'website_clicks', label: 'Clics Sitio Web', color: '#e57373' },
@@ -19,15 +19,22 @@ const metrics = [
 export default function ReportChart({ data }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={data}>
+      <LineChart
+        data={data}
+        margin={{ top: 20, right: 40, left: 10, bottom: 20 }}
+      >
         <CartesianGrid stroke="#ccc" />
-        <XAxis dataKey="date" />
-        <YAxis />
+        <XAxis
+          dataKey="date"
+          tickFormatter={str => str.slice(5)} // muestra MM-DD
+          minTickGap={10}
+        />
+        <YAxis allowDecimals={false} />
         <Tooltip />
         <Legend />
         {metrics.map(
           ({ key, label, color }) =>
-            data.some(d => d[key] !== undefined) && (
+            data.some(d => typeof d[key] === "number") && (
               <Line
                 key={key}
                 type="monotone"
@@ -36,6 +43,7 @@ export default function ReportChart({ data }) {
                 stroke={color}
                 dot={false}
                 strokeWidth={2}
+                connectNulls
               />
             )
         )}
