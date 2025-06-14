@@ -9,6 +9,6 @@ export function isDev() {
     if (isDev()) {
       return "http://localhost:5173/accounts?dev=1"; // O donde tengas tu selector de cuentas
     } else {
-      return "https://app.epm-marketing.com/accounts";
+    return "https://epm-app-v2-frontend.onrender.com/accounts";
     }
   }
