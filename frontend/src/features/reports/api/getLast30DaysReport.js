@@ -7,14 +7,10 @@ function getUnixDateNDaysAgo(n) {
   export default async function getLast30DaysReport() {
     const userToken = localStorage.getItem('epm_access_token');
     const igProfileRaw = localStorage.getItem('epm_instagram_profile');
-    console.log("Token:", userToken);
-    console.log("Raw Instagram Profile:", igProfileRaw);
-  
     let igProfile;
     try {
       igProfile = JSON.parse(igProfileRaw);
     } catch (e) {
-      console.log("Error al parsear el perfil IG:", e);
       throw new Error('Perfil de Instagram no válido');
     }
     if (!userToken || !igProfile) throw new Error('Tokens no disponibles');
@@ -24,31 +20,55 @@ function getUnixDateNDaysAgo(n) {
       'likes','comments','shares','replies','accounts_engaged'
     ];
   
-    const since = getUnixDateNDaysAgo(30);
-    const until = getUnixDateNDaysAgo(0);
-  
     const igId = igProfile.ig_id || igProfile.id;
-    const endpoint = `https://graph.facebook.com/v20.0/${igId}/insights?metric=${metrics.join(',')}&period=day&since=${since}&until=${until}&metric_type=total_value&access_token=${userToken}`;
-    console.log("API Endpoint:", endpoint);
+    const days = 30;
+    // Array con los últimos 30 días, del más antiguo al más reciente
+    const today = new Date();
+    const daysArray = Array.from({length: days}, (_, idx) => {
+      const since = new Date(today);
+      since.setDate(today.getDate() - (days - idx));
+      const until = new Date(since);
+      until.setDate(since.getDate() + 1);
+      // Formatea fecha YYYY-MM-DD
+      const pad = n => n.toString().padStart(2, '0');
+      const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      return {
+        sinceUnix: Math.floor(since.getTime() / 1000),
+        untilUnix: Math.floor(until.getTime() / 1000),
+        date: fmt(since)
+      };
+    });
   
-    const response = await fetch(endpoint);
-    console.log("Response OK?", response.ok);
-    const data = await response.json();
-    console.log("API Response data:", data);
+    // Consulta la API para cada día
+    const fetchDay = async ({sinceUnix, untilUnix, date}) => {
+      const endpoint = `https://graph.facebook.com/v20.0/${igId}/insights?metric=${metrics.join(',')}&period=day&since=${sinceUnix}&until=${untilUnix}&metric_type=total_value&access_token=${userToken}`;
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        // Si la API falla para un día, devuelve vacío para ese día
+        return { date };
+      }
+      const data = await response.json();
+      // data.data es un array de métricas para ese día
+      const obj = { date };
+      if (Array.isArray(data.data)) {
+        metrics.forEach(metricName => {
+          const metricData = data.data.find(x => x.name === metricName);
+          // Busca el valor de la métrica para ese día
+          if (metricData?.total_value?.value !== undefined && metricData?.total_value?.value !== null) {
+            obj[metricName] = metricData.total_value.value;
+          } else {
+            obj[metricName] = null;
+          }
+        });
+      }
+      return obj;
+    };
   
-    const dateMap = {};
-    if (data.data && Array.isArray(data.data)) {
-      data.data.forEach(metric => {
-        if (Array.isArray(metric.values)) {
-          metric.values.forEach(entry => {
-            const date = entry.end_time.slice(0, 10); // YYYY-MM-DD
-            if (!dateMap[date]) dateMap[date] = { date };
-            dateMap[date][metric.name] = entry.value ?? null;
-          });
-        }
-      });
-    }
-    const chartData = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-    console.log("chartData:", chartData);
-    return chartData || [];
+    // Ejecuta las consultas en paralelo (Promise.all)
+    const results = await Promise.all(daysArray.map(fetchDay));
+  
+    // Filtra días sin ninguna métrica (puede pasar si la cuenta es nueva o hay un error)
+    const filtered = results.filter(row => metrics.some(m => row[m] !== null && row[m] !== undefined));
+  
+    return filtered;
   }
