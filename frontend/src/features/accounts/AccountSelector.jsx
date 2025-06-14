@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useFacebookLogin } from "../hooks/useFacebookLogin";
-import AppLayout from "../components/AppLayout";
+import { useFacebookLogin } from "/EPM app v2/frontend/src/hooks/useFacebookLogin";
+import AppLayout from "/EPM app v2/frontend/src/componentss/AppLayout";
 import {
   Box,
   Card,
