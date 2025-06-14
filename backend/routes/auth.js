@@ -8,7 +8,7 @@ module.exports = function(usersCollection) {
     const {
       fb_id, fb_email, fb_name, fb_picture,
       accessToken,
-      ig_accounts
+      ig_id, ig_username, ig_name, ig_picture
     } = req.body;
 
     console.log('---- POST /login ----');
@@ -30,7 +30,10 @@ module.exports = function(usersCollection) {
           { $set: {
               fb_email, fb_name, fb_picture,
               accessToken,
-              ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+              ig_id: ig_id || null,
+              ig_username: ig_username || null,
+              ig_name: ig_name || null,
+              ig_picture: ig_picture || null,
               updatedAt: new Date().toISOString()
             }
           }
@@ -43,7 +46,10 @@ module.exports = function(usersCollection) {
         user = {
           fb_id, fb_email, fb_name, fb_picture,
           accessToken,
-          ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+          ig_id: ig_id || null,
+          ig_username: ig_username || null,
+          ig_name: ig_name || null,
+          ig_picture: ig_picture || null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
