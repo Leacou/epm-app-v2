@@ -5,7 +5,7 @@ export default function LandingPage() {
   const [token, setToken] = useState(localStorage.getItem("epm_access_token"));
 
   useEffect(() => {
-    // Si volvemos del login de FB e incluye el token en el hash
+    // Extrae el token del hash tras login de FB
     const hash = window.location.hash;
     if (hash.includes("access_token")) {
       const params = new URLSearchParams(hash.replace("#", ""));
@@ -13,20 +13,21 @@ export default function LandingPage() {
       if (newToken) {
         localStorage.setItem("epm_access_token", newToken);
         setToken(newToken);
-        // Limpia el hash
         window.location.hash = "";
-        // Redirige a /accounts
         window.location.replace("/accounts");
       }
+    } else if (token) {
+      // Si ya estás logueado, redirige automáticamente a /accounts
+      window.location.replace("/accounts");
     }
-  }, []);
+  }, [token]);
 
   const handleLogin = () => {
     window.location.href = getFacebookLoginUrl();
   };
 
+  // Mostrar botón solo si no hay token
   if (!token) {
-    // No hay token: muestra el botón de login
     return (
       <div className="landing">
         <h1>Bienvenido a LALOKJA</h1>
@@ -36,11 +37,11 @@ export default function LandingPage() {
     );
   }
 
-  // Si hay token: muestra un mensaje y podrías redirigir automáticamente si quieres
+  // Si hay token, mientras redirige puedes mostrar un loader o nada
   return (
     <div className="landing">
       <h1>Bienvenido a LALOKJA</h1>
-      <p>¡Ya estás logueado!</p>
+      <p>Redirigiendo a tus cuentas...</p>
     </div>
   );
 }
