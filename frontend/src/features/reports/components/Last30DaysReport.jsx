@@ -17,6 +17,7 @@ export default function Last30DaysReport() {
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error.message}</Alert>;
+  if (!data?.length) return <Alert severity="info">No hay datos disponibles para los últimos 30 días.</Alert>;
 
   return <ReportChart data={data} />;
 }

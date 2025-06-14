@@ -1,0 +1,68 @@
+.
+├── backend
+│   ├── index.js
+│   ├── mongodb
+│   │   ├── playground-1.mongodb.js
+│   │   └── playgroundLea
+│   │       └── use('epm-app-mongo-2');.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   └── auth.js
+│   └── users.json
+├── estructura.txt
+├── frontend
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── api
+│   │   │   └── facebook.js
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── auth
+│   │   ├── components
+│   │   │   ├── AppLayout.jsx
+│   │   │   └── NotFound.jsx
+│   │   ├── features
+│   │   │   ├── accounts
+│   │   │   │   └── AccountSelector.jsx
+│   │   │   ├── configuracion
+│   │   │   ├── dashboard
+│   │   │   ├── estrategia
+│   │   │   ├── landing
+│   │   │   │   └── LandingPage.jsx
+│   │   │   ├── mentoria
+│   │   │   ├── reports
+│   │   │   │   ├── ReportsDashboard.jsx
+│   │   │   │   ├── api
+│   │   │   │   │   ├── fetchInstagramData.js
+│   │   │   │   │   └── getLast30DaysReport.js
+│   │   │   │   └── components
+│   │   │   │       ├── AsideMenu.jsx
+│   │   │   │       └── Last30DaysReport.jsx
+│   │   │   └── user_home
+│   │   │       └── UserHome.jsx
+│   │   ├── hooks
+│   │   │   └── useFacebookLogin.js
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   └── Accounts.jsx
+│   │   ├── routes
+│   │   │   └── AppRoutes.jsx
+│   │   ├── theme.js
+│   │   └── utils
+│   │       ├── auth.js
+│   │       └── env.js
+│   └── vite.config.js
+├── package-lock.json
+└── package.json
+
+27 directories, 39 files
