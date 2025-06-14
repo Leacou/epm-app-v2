@@ -2,19 +2,18 @@ import React, { useEffect, useState } from "react";
 import { getAccessToken } from "../../utils/auth";
 
 const AccountSelector = () => {
-  const [accessToken, setAccessToken] = useState(null);
   const [igAccounts, setIgAccounts] = useState([]);
   const [fbProfile, setFbProfile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = getAccessToken();
-    setAccessToken(token);
-    if (!token) return;
-
-    setLoading(true);
-    setError(null);
+    if (!token) {
+      setError("No se encontró access token. Por favor, inicia sesión.");
+      setLoading(false);
+      return;
+    }
 
     // 1. Traer perfil de Facebook
     const fbFields = "id,name,email,picture";
@@ -45,31 +44,41 @@ const AccountSelector = () => {
           setIgAccounts([]);
         }
       })
-      .catch(err => {
+      .catch(() => {
         setError("Error obteniendo cuentas de Instagram.");
       })
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div>
+    <div style={{ maxWidth: 400, margin: "0 auto" }}>
       <h2>Selecciona tu cuenta de Instagram</h2>
       {loading && <p>Cargando cuentas...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {fbProfile && (
-        <div>
+        <div style={{ marginBottom: 16 }}>
           <p>¡Hola, {fbProfile.name}!</p>
-          <img src={fbProfile.picture?.data?.url} alt="FB" width={48} />
+          {fbProfile.picture?.data?.url && (
+            <img src={fbProfile.picture.data.url} alt="FB" width={48} style={{ borderRadius: "50%" }} />
+          )}
         </div>
       )}
       <div>
         {igAccounts.length > 0 ? (
-          <ul>
+          <ul style={{ listStyle: "none", padding: 0 }}>
             {igAccounts.map(ig => (
-              <li key={ig.id}>
-                <strong>@{ig.username}</strong> - {ig.name}
-                <br />
-                <img src={ig.profile_picture_url} alt={ig.username} width={48} />
+              <li key={ig.id} style={{ marginBottom: 16, display: "flex", alignItems: "center" }}>
+                <img
+                  src={ig.profile_picture_url}
+                  alt={ig.username}
+                  width={48}
+                  height={48}
+                  style={{ borderRadius: "50%", marginRight: 16 }}
+                />
+                <div>
+                  <strong>@{ig.username}</strong>
+                  <div>{ig.name}</div>
+                </div>
               </li>
             ))}
           </ul>
