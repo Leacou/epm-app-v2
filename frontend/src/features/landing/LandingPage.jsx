@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getFacebookLoginUrl } from "../../api/facebook";
+import AppLayout from "../../components/AppLayout";
 
 export default function LandingPage() {
   const [token, setToken] = useState(localStorage.getItem("epm_access_token"));
@@ -26,22 +27,25 @@ export default function LandingPage() {
     window.location.href = getFacebookLoginUrl();
   };
 
-  // Mostrar botón solo si no hay token
   if (!token) {
     return (
-      <div className="landing">
-        <h1>Bienvenido a LALOKJA</h1>
-        <p>Tu centro de control para Instagram</p>
-        <button onClick={handleLogin}>Iniciar sesión con Facebook</button>
-      </div>
+      <AppLayout>
+        <div className="landing" style={{ textAlign: "center", marginTop: "3rem" }}>
+          <h1>Bienvenido a LALOKJA</h1>
+          <p>Tu centro de control para Instagram</p>
+          <button onClick={handleLogin}>Iniciar sesión con Facebook</button>
+        </div>
+      </AppLayout>
     );
   }
 
   // Si hay token, mientras redirige puedes mostrar un loader o nada
   return (
-    <div className="landing">
-      <h1>Bienvenido a LALOKJA</h1>
-      <p>Redirigiendo a tus cuentas...</p>
-    </div>
+    <AppLayout>
+      <div className="landing" style={{ textAlign: "center", marginTop: "3rem" }}>
+        <h1>Bienvenido a LALOKJA</h1>
+        <p>Redirigiendo a tus cuentas...</p>
+      </div>
+    </AppLayout>
   );
 }
