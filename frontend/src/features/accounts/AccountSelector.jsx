@@ -1,97 +1,120 @@
-import React, { useEffect, useState } from "react";
-import { getAccessToken } from "../../utils/auth";
+import React, { useEffect } from "react";
+import { useFacebookLogin } from "../hooks/useFacebookLogin";
+import AppLayout from "../components/AppLayout";
+import {
+  Box,
+  Card,
+  CardContent,
+  Avatar,
+  Typography,
+  CircularProgress,
+  Alert,
+  Chip,
+  Button,
+  Grid,
+} from "@mui/material";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import FacebookIcon from "@mui/icons-material/Facebook";
 
-const AccountSelector = () => {
-  const [igAccounts, setIgAccounts] = useState([]);
-  const [fbProfile, setFbProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [tokenChecked, setTokenChecked] = useState(false);
+export default function Accounts() {
+  const { loading, error, fbProfile, igProfile, login } = useFacebookLogin();
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      // Redirige si no hay token (previene loops y UX confusa)
-      window.location.replace("/");
-      return;
-    }
-    setTokenChecked(true);
-
-    // 1. Traer perfil de Facebook
-    const fbFields = "id,name,email,picture";
-    const fbUrl = `https://graph.facebook.com/v23.0/me?fields=${fbFields}&access_token=${token}`;
-    fetch(fbUrl)
-      .then(res => res.json())
-      .then(profile => {
-        setFbProfile(profile);
-
-        // 2. Traer todas las páginas administradas y sus cuentas de IG asociadas
-        const pagesUrl = `https://graph.facebook.com/v23.0/me/accounts?fields=id,name,instagram_business_account&access_token=${token}`;
-        return fetch(pagesUrl).then(res => res.json());
-      })
-      .then(async pagesResult => {
-        if (pagesResult.data && Array.isArray(pagesResult.data)) {
-          // Array de promesas para traer cuentas de IG
-          const igPromises = pagesResult.data
-            .filter(page => page.instagram_business_account && page.instagram_business_account.id)
-            .map(page => {
-              const igId = page.instagram_business_account.id;
-              const igUrl = `https://graph.facebook.com/v23.0/${igId}?fields=id,username,profile_picture_url,name&access_token=${token}`;
-              return fetch(igUrl).then(res => res.json());
-            });
-
-          const igAccountsData = await Promise.all(igPromises);
-          setIgAccounts(igAccountsData);
-        } else {
-          setIgAccounts([]);
-        }
-      })
-      .catch(() => {
-        setError("Error obteniendo cuentas de Instagram.");
-      })
-      .finally(() => setLoading(false));
+    login();
+    window.history.replaceState(null, '', window.location.pathname);
+    // eslint-disable-next-line
   }, []);
 
-  if (!tokenChecked) return null; // Evita parpadeo antes de decidir si hay token
+  // Si quieres soportar varias cuentas, ponlas en un array. Por ahora, igProfile puede ser solo una.
+  const instagramAccounts = igProfile ? [igProfile] : [];
 
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto" }}>
-      <h2>Selecciona tu cuenta de Instagram</h2>
-      {loading && <p>Cargando cuentas...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {fbProfile && (
-        <div style={{ marginBottom: 16 }}>
-          <p>¡Hola, {fbProfile.name}!</p>
-          {fbProfile.picture?.data?.url && (
-            <img src={fbProfile.picture.data.url} alt="FB" width={48} style={{ borderRadius: "50%" }} />
-          )}
-        </div>
-      )}
-      <div>
-        {igAccounts.length > 0 ? (
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {igAccounts.map(ig => (
-              <li key={ig.id} style={{ marginBottom: 16, display: "flex", alignItems: "center" }}>
-                <img
-                  src={ig.profile_picture_url}
-                  alt={ig.username}
-                  width={48}
-                  height={48}
-                  style={{ borderRadius: "50%", marginRight: 16 }}
-                />
-                <div>
-                  <strong>@{ig.username}</strong>
-                  <div>{ig.name}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          !loading && <p>No hay cuentas de Instagram asociadas a tu Facebook.</p>
+    <AppLayout>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} sx={{ mt: 4 }}>
+        {fbProfile && (
+          <>
+            <Avatar
+              src={fbProfile.picture?.data?.url}
+              sx={{
+                width: 72,
+                height: 72,
+                bgcolor: "primary.main",
+                mb: 1,
+                boxShadow: 2,
+              }}
+              alt="Perfil Facebook"
+            >
+              <FacebookIcon />
+            </Avatar>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              ¡Hola, {fbProfile.name}! Bienvenido a EPM App
+            </Typography>
+          </>
         )}
-      </div>
-    </div>
-  );
-};
 
-export default AccountSelector;
+        <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+          Selecciona una de tus cuentas de Instagram
+        </Typography>
+
+        {loading && <CircularProgress color="primary" />}
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <Grid container spacing={3} justifyContent="center" sx={{ maxWidth: 600 }}>
+          {instagramAccounts.length > 0 ? (
+            instagramAccounts.map((ig, idx) => (
+              <Grid item xs={12} sm={6} md={4} key={ig.id || idx}>
+                <Card
+                  sx={{
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.04)",
+                      boxShadow: 6,
+                      cursor: "pointer",
+                    },
+                    bgcolor: "background.paper",
+                  }}
+                  // onClick={() => { /* Aquí puedes manejar la selección y navegación */ }}
+                >
+                  <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                    <Avatar
+                      src={ig.profile_picture_url}
+                      sx={{ width: 64, height: 64, bgcolor: "secondary.main" }}
+                      alt={ig.username}
+                    >
+                      <InstagramIcon />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ color: "secondary.main" }}>
+                      @{ig.username}
+                    </Typography>
+                    <Typography variant="body2">{ig.name}</Typography>
+                    <Chip
+                      icon={<InstagramIcon style={{ color: "#EB8957" }} />}
+                      label="Instagram"
+                      sx={{ bgcolor: "#EBE4DD", color: "#EB8957", fontWeight: 500, mt: 1 }}
+                      size="small"
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))
+          ) : (
+            !loading && (
+              <Typography variant="body2" color="text.secondary">
+                No hay cuentas de Instagram asociadas a tu Facebook.
+              </Typography>
+            )
+          )}
+        </Grid>
+
+        <Button
+          variant="contained"
+          color="info"
+          sx={{ mt: 5, px: 4, fontWeight: 700, borderRadius: 20 }}
+          onClick={login}
+        >
+          Volver a conectar cuentas
+        </Button>
+      </Box>
+    </AppLayout>
+  );
+}
