@@ -65,7 +65,10 @@ export default function UserHome() {
                   alignItems: "center",
                   bgcolor: "background.paper",
                 }}
-                onClick={() => navigate(prod.redirect)}
+                onClick={() => {
+                    console.log('navigate:', navigate, typeof navigate);
+                    navigate(prod.redirect);
+                  }}
               >
                 <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                   <Avatar sx={{ width: 56, height: 56, bgcolor: "#F5F6FA", mb: 1 }}>
