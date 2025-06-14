@@ -10,7 +10,10 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: "¡Hola desde el backend!" });
 });
 
-const PORT = process.env.PORT || 3001;
+// Rutas de auth
+app.use('/api/auth', require('./routes/auth'));
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log('Backend escuchando en puerto', PORT);
+  console.log('Servidor backend escuchando en puerto', PORT);
 });
