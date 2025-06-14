@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "../features/landing/LandingPage";
 import AccountSelector from "../features/accounts/AccountSelector";
 import NotFound from "../components/NotFound";
+import UserHome from "../features/user_home/UserHome";
+
 // Agrega aquí más rutas cuando las crees
 
 export default function AppRoutes() {
