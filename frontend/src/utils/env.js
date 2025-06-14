@@ -7,7 +7,7 @@ export function isDev() {
   // Devuelve la URI de redirección según el entorno
   export function getRedirectUri() {
     if (isDev()) {
-      return "http://localhost:5173/accounts"; // O donde tengas tu selector de cuentas
+      return "http://localhost:5173/accounts?dev=1"; // O donde tengas tu selector de cuentas
     } else {
       return "https://app.epm-marketing.com/accounts";
     }
