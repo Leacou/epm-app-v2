@@ -55,23 +55,33 @@ export function getAccessToken() {
     // 2. Cuentas de Instagram asociadas
     const pagesUrl = `https://graph.facebook.com/v23.0/me/accounts?fields=id,name,instagram_business_account&access_token=${token}`;
     const pagesResult = await fetchFacebookAPI(pagesUrl);
-    let igProfile = null;
   
+    let igAccounts = [];
     if (pagesResult.data && Array.isArray(pagesResult.data)) {
-      const igAccount = pagesResult.data.find(
-        page => page.instagram_business_account && page.instagram_business_account.id
-      );
-      if (igAccount) {
-        const igId = igAccount.instagram_business_account.id;
-        const igUrl = `https://graph.facebook.com/v23.0/${igId}?fields=id,username,profile_picture_url,name&access_token=${token}`;
-        igProfile = await fetchFacebookAPI(igUrl);
-      }
+      // Trae TODAS las cuentas Instagram asociadas a las páginas
+      const igPromises = pagesResult.data
+        .filter(page => page.instagram_business_account && page.instagram_business_account.id)
+        .map(async page => {
+          const igId = page.instagram_business_account.id;
+          const igUrl = `https://graph.facebook.com/v23.0/${igId}?fields=id,username,profile_picture_url,name&access_token=${token}`;
+          const igProfile = await fetchFacebookAPI(igUrl);
+          return {
+            ig_id: igProfile.id,
+            ig_username: igProfile.username,
+            ig_name: igProfile.name,
+            ig_picture: igProfile.profile_picture_url
+          };
+        });
+      igAccounts = await Promise.all(igPromises);
     }
   
-    if (igProfile) {
-      localStorage.setItem('epm_instagram_profile', JSON.stringify(igProfile));
+    if (igAccounts.length) {
+      // Guarda el primer perfil como destacado (opcional)
+      localStorage.setItem('epm_instagram_profile', JSON.stringify(igAccounts[0]));
+      localStorage.setItem('epm_instagram_accounts', JSON.stringify(igAccounts));
     } else {
       localStorage.removeItem('epm_instagram_profile');
+      localStorage.removeItem('epm_instagram_accounts');
     }
   
     // 3. Enviar ambos al backend
@@ -82,10 +92,7 @@ export function getAccessToken() {
         fb_name: fbProfile.name,
         fb_picture: fbProfile.picture?.data?.url || null,
         accessToken: token,
-        ig_id: igProfile ? igProfile.id : null,
-        ig_username: igProfile ? igProfile.username : null,
-        ig_name: igProfile ? igProfile.name : null,
-        ig_picture: igProfile ? igProfile.profile_picture_url : null
+        ig_accounts: igAccounts // <-- Array de cuentas IG
       };
   
       console.log("Enviando usuario+instagram al backend:", payload);
@@ -110,7 +117,7 @@ export function getAccessToken() {
           console.error('Error comunicando con backend:', err);
         });
     }
-    return { fbProfile, igProfile };
+    return { fbProfile, igAccounts };
   }
   
   export function getFacebookProfile() {
