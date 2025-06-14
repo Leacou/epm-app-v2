@@ -2,7 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  "https://epm-app-v2-frontend.onrender.com", // producción
+  "http://localhost:5173" // desarrollo local
+];
+
+app.use(cors({
+  origin: allowedOrigins
+}));
+
 app.use(express.json());
 
 // Ruta de prueba
