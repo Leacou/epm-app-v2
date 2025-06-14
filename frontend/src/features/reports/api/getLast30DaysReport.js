@@ -11,7 +11,7 @@ function getUnixDateNDaysAgo(n) {
     if (!userToken || !igProfile) throw new Error('Tokens no disponibles');
   
     const metrics = [
-      'impressions','reach','profile_views','website_clicks',
+      'views','reach','profile_views','website_clicks',
       'likes','comments','shares','replies','accounts_engaged'
     ];
   
