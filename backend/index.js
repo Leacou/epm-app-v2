@@ -7,10 +7,7 @@ const allowedOrigins = [
   "http://localhost:5173" // desarrollo local
 ];
 
-app.use(cors({
-  origin: allowedOrigins
-}));
-
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Ruta de prueba
@@ -21,7 +18,10 @@ app.get('/api/hello', (req, res) => {
 // Rutas de auth
 app.use('/api/auth', require('./routes/auth'));
 
+// Puerto
 const PORT = process.env.PORT || 10000;
+
+// Iniciar servidor solo si no hay error en Mongo
 app.listen(PORT, () => {
   console.log('Servidor backend escuchando en puerto', PORT);
 });

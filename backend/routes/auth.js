@@ -1,56 +1,75 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const { MongoClient } = require('mongodb');
 const router = express.Router();
 
-const usersFile = path.join(__dirname, '../users.json'); // <--- ¡FALTA ESTA LINEA!
+// 💡 Usa tu string de conexión aquí
+const uri = "mongodb+srv://epm-app-mongo:dnrvUY6MQj4CACpA@epm-app-mongo.xgka1gn.mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(uri);
+
+let usersCollection;
+
+// Solo conectamos una vez al iniciar
+client.connect()
+  .then(() => {
+    const db = client.db('epm-app-mongo'); // Usa el nombre de tu base de datos
+    usersCollection = db.collection('users');
+    console.log('🟢 Conectado a MongoDB Atlas');
+  })
+  .catch(err => {
+    console.error('🔴 Error conectando a MongoDB Atlas', err);
+  });
 
 router.post('/login', async (req, res) => {
   const {
     fb_id, fb_email, fb_name, fb_picture,
     accessToken,
-    ig_accounts // 👈 ahora es un array de IGs
+    ig_accounts
   } = req.body;
 
-  // Leer usuarios actuales
-  let users = [];
+  if (!fb_id) return res.status(400).json({ ok: false, error: 'fb_id requerido' });
+
   try {
-    const data = fs.readFileSync(usersFile, 'utf8');
-    users = JSON.parse(data);
-  } catch (err) {
-    users = [];
-  }
+    // Buscar usuario existente
+    let user = await usersCollection.findOne({ fb_id });
 
-  // Buscar usuario por fb_id
-  let user = users.find(u => u.fb_id === fb_id);
+    if (user) {
+      // Actualiza usuario
+      await usersCollection.updateOne(
+        { fb_id },
+        { $set: {
+            fb_email, fb_name, fb_picture,
+            accessToken,
+            ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+            updatedAt: new Date().toISOString()
+          }
+        }
+      );
+      user = await usersCollection.findOne({ fb_id });
+    } else {
+      // Crea nuevo usuario
+      user = {
+        fb_id, fb_email, fb_name, fb_picture,
+        accessToken,
+        ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      await usersCollection.insertOne(user);
+    }
 
-  if (user) {
-    // Actualizar datos y reemplazar cuentas IG
-    Object.assign(user, {
-      fb_email, fb_name, fb_picture,
-      accessToken,
-      ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
-      updatedAt: new Date().toISOString()
-    });
-  } else {
-    // Crear nuevo usuario
-    user = {
-      fb_id, fb_email, fb_name, fb_picture,
-      accessToken,
-      ig_accounts: Array.isArray(ig_accounts) ? ig_accounts : [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    users.push(user);
-  }
-
-  // Guardar usuarios actualizados
-  try {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
     res.json({ ok: true, user });
   } catch (err) {
-    res.status(500).json({ ok: false, error: 'Error escribiendo users.json' });
+    res.status(500).json({ ok: false, error: 'Error accediendo a MongoDB', details: err.message });
   }
 });
 
-module.exports = router; // <--- ¡NO OLVIDES ESTA LINEA!
+router.get('/all', async (req, res) => {
+    try {
+      const users = await usersCollection.find().toArray();
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ ok: false, error: 'Error accediendo a la base', details: err.message });
+    }
+  });
+
+module.exports = router;
