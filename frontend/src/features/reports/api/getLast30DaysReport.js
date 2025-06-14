@@ -18,7 +18,7 @@ function getUnixDateNDaysAgo(n) {
     const since = getUnixDateNDaysAgo(30);
     const until = getUnixDateNDaysAgo(0);
   
-    const endpoint = `https://graph.facebook.com/v20.0/${igProfile.ig_id}/insights?metric=${metrics.join(',')}&period=day&since=${since}&until=${until}&metric_type=total_value&access_token=${userToken}`;
+    const endpoint = `https://graph.facebook.com/v20.0/${igProfile.id}/insights?metric=${metrics.join(',')}&period=day&since=${since}&until=${until}&metric_type=total_value&access_token=${userToken}`;
   
     const response = await fetch(endpoint);
     if (!response.ok) throw new Error('Error al consultar la API de Instagram');
