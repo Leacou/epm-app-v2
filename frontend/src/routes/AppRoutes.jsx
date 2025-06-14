@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "../features/landing/LandingPage";
 import AccountSelector from "../features/accounts/AccountSelector";
+import NotFound from "../components/NotFound";
 // Agrega aquí más rutas cuando las crees
 
 export default function AppRoutes() {
