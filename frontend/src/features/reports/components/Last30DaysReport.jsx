@@ -12,19 +12,17 @@ import { CircularProgress, Alert, Box, Typography, Button, Select, MenuItem } fr
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
 function calculateEngagement(row) {
-  // engagement = (likes + comments + shares + saves) / reach * 100
-  // "saves" no está en los datos diarios estándar, así que lo ponemos en 0
   const likes = row.likes ?? 0;
   const comments = row.comments ?? 0;
   const shares = row.shares ?? 0;
-  const saves = row.saves ?? 0; // Si tu API lo trae, si no, ignóralo
+  const saves = row.saves ?? 0;
   const reach = row.reach ?? 0;
   if (!reach) return 0;
   return Number(((likes + comments + shares + saves) / reach * 100).toFixed(2));
 }
 
 export default function Last30DaysReport() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeView, setActiveView] = useState('dashboard');
@@ -32,36 +30,36 @@ export default function Last30DaysReport() {
 
   useEffect(() => {
     getLast30DaysReport()
-      .then(setData)
+      .then(d => setData(d || []))
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Box textAlign="center" py={6}><CircularProgress /></Box>;
   if (error) return <Alert severity="error">{error.message}</Alert>;
-  if (!data?.length) return <Alert severity="info">No hay datos disponibles para los últimos 30 días.</Alert>;
+  if (!data || !Array.isArray(data) || !data.length) return <Alert severity="info">No hay datos disponibles para los últimos 30 días.</Alert>;
 
   // Prepara los datos
-  const processedData = useMemo(() => data.map(row => ({
+  const processedData = useMemo(() => (data ? data.map(row => ({
     ...row,
     engagementRate: calculateEngagement(row)
-  })), [data]);
+  })) : []), [data]);
 
   // KPIs
   const totalReach = processedData.reduce((sum, d) => sum + (d.reach || 0), 0);
   const totalLikes = processedData.reduce((sum, d) => sum + (d.likes || 0), 0);
   const avgEngagement = processedData.length
-    ? (processedData.reduce((sum, d) => sum + d.engagementRate, 0) / processedData.length).toFixed(2)
+    ? (processedData.reduce((sum, d) => sum + (d.engagementRate || 0), 0) / processedData.length).toFixed(2)
     : 0;
   const bestPerformer = processedData.reduce((best, d) =>
-    d.engagementRate > (best.engagementRate || 0) ? d : best, {});
+    (d.engagementRate || 0) > (best.engagementRate || 0) ? d : best, {});
 
   // Para gráficos
   const chartData = processedData.map(d => ({
-    date: new Date(d.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
-    engagement: d.engagementRate,
-    reach: d.reach,
-    likes: d.likes,
+    date: d.date ? new Date(d.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : '',
+    engagement: d.engagementRate ?? 0,
+    reach: d.reach ?? 0,
+    likes: d.likes ?? 0,
     interactions: (d.likes || 0) + (d.comments || 0) + (d.shares || 0) + (d.saves || 0)
   }));
 
@@ -74,10 +72,10 @@ export default function Last30DaysReport() {
 
   // Sorting para tabla y tarjetas
   const sortedData = useMemo(() => {
-    let arr = [...processedData];
+    let arr = processedData ? [...processedData] : [];
     switch (sortBy) {
       case 'engagement':
-        arr.sort((a, b) => b.engagementRate - a.engagementRate);
+        arr.sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0));
         break;
       case 'reach':
         arr.sort((a, b) => (b.reach || 0) - (a.reach || 0));
@@ -91,12 +89,10 @@ export default function Last30DaysReport() {
     return arr;
   }, [processedData, sortBy]);
 
-  // Utilidad para thumbnails: si tenés, poné la url real, si no, usa placeholder (o quitá columna)
   const getThumbnail = (row) =>
     row.thumbnail ||
-    `https://via.placeholder.com/120x120/eee/888?text=${row.date.replace(/-/g, '/')}`;
+    `https://via.placeholder.com/120x120/eee/888?text=${row.date ? row.date.replace(/-/g, '/') : ''}`;
 
-  // KPI Card
   const KPICard = ({ title, value, icon: Icon, color, subtitle }) => (
     <Box
       sx={{
@@ -115,7 +111,6 @@ export default function Last30DaysReport() {
     </Box>
   );
 
-  // Tarjeta de día
   const DayCard = ({ row }) => (
     <Box
       sx={{
@@ -126,26 +121,26 @@ export default function Last30DaysReport() {
       <Box sx={{ position: 'relative', height: 120, bgcolor: '#f5f5f5' }}>
         <img src={getThumbnail(row)} alt={row.date} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <Box position="absolute" top={8} right={8} bgcolor="#0008" color="#fff" px={1} py={0.5} borderRadius={2} fontSize={12}>
-          {row.engagementRate}%
+          {row.engagementRate ?? 0}%
         </Box>
       </Box>
       <Box p={2}>
-        <Typography variant="body2" color="text.secondary">{new Date(row.date).toLocaleDateString('es-ES')}</Typography>
+        <Typography variant="body2" color="text.secondary">{row.date ? new Date(row.date).toLocaleDateString('es-ES') : ''}</Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
           <Typography variant="caption" sx={{
-            bgcolor: row.engagementRate > 7 ? '#d1fae5' : row.engagementRate > 4 ? '#fef9c3' : '#fee2e2',
-            color: row.engagementRate > 7 ? '#065f46' : row.engagementRate > 4 ? '#92400e' : '#991b1b',
+            bgcolor: (row.engagementRate > 7) ? '#d1fae5' : (row.engagementRate > 4) ? '#fef9c3' : '#fee2e2',
+            color: (row.engagementRate > 7) ? '#065f46' : (row.engagementRate > 4) ? '#92400e' : '#991b1b',
             px: 1.5, py: 0.5, borderRadius: 2
           }}>
-            {row.engagementRate > 7 ? 'Alto' : row.engagementRate > 4 ? 'Medio' : 'Bajo'}
+            {(row.engagementRate > 7) ? 'Alto' : (row.engagementRate > 4) ? 'Medio' : 'Bajo'}
           </Typography>
           <Play size={18} color="#888" />
         </Box>
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, fontSize: 14 }}>
-          <Box display="flex" alignItems="center" gap={1}><Eye size={16} /> {row.reach || 0}</Box>
-          <Box display="flex" alignItems="center" gap={1}><Heart size={16} /> {row.likes || 0}</Box>
-          <Box display="flex" alignItems="center" gap={1}><MessageCircle size={16} /> {row.comments || 0}</Box>
-          <Box display="flex" alignItems="center" gap={1}><Share size={16} /> {row.shares || 0}</Box>
+          <Box display="flex" alignItems="center" gap={1}><Eye size={16} /> {row.reach ?? 0}</Box>
+          <Box display="flex" alignItems="center" gap={1}><Heart size={16} /> {row.likes ?? 0}</Box>
+          <Box display="flex" alignItems="center" gap={1}><MessageCircle size={16} /> {row.comments ?? 0}</Box>
+          <Box display="flex" alignItems="center" gap={1}><Share size={16} /> {row.shares ?? 0}</Box>
         </Box>
       </Box>
     </Box>
@@ -187,7 +182,7 @@ export default function Last30DaysReport() {
             <KPICard title="Alcance Total" value={totalReach.toLocaleString()} icon={Eye} color="#3b82f6" subtitle="Últimos 30 días" />
             <KPICard title="Likes Totales" value={totalLikes.toLocaleString()} icon={Heart} color="#ef4444" subtitle="Últimos 30 días" />
             <KPICard title="Engagement Promedio" value={`${avgEngagement}%`} icon={TrendingUp} color="#10b981" subtitle="General" />
-            <KPICard title="Mejor Día" value={`${bestPerformer.engagementRate || 0}%`} icon={Bookmark} color="#a78bfa"
+            <KPICard title="Mejor Día" value={`${bestPerformer.engagementRate ?? 0}%`} icon={Bookmark} color="#a78bfa"
               subtitle={bestPerformer?.date ? new Date(bestPerformer.date).toLocaleDateString('es-ES') : '-'} />
           </Box>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -308,20 +303,20 @@ export default function Last30DaysReport() {
               <tbody>
                 {sortedData.map(row => (
                   <tr key={row.date} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: 8 }}>{new Date(row.date).toLocaleDateString('es-ES')}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.reach?.toLocaleString() || 0}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.views?.toLocaleString() || 0}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.likes || 0}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.comments || 0}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.shares || 0}</td>
-                    <td style={{ padding: 8, textAlign: 'right' }}>{row.engagementRate}%</td>
+                    <td style={{ padding: 8 }}>{row.date ? new Date(row.date).toLocaleDateString('es-ES') : ''}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.reach?.toLocaleString() ?? 0}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.views?.toLocaleString() ?? 0}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.likes ?? 0}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.comments ?? 0}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.shares ?? 0}</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{row.engagementRate ?? 0}%</td>
                     <td style={{ padding: 8, textAlign: 'right' }}>
                       <span style={{
                         display: 'inline-block', borderRadius: 12, padding: '2px 10px',
-                        background: row.engagementRate > 7 ? '#d1fae5' : row.engagementRate > 4 ? '#fef9c3' : '#fee2e2',
-                        color: row.engagementRate > 7 ? '#065f46' : row.engagementRate > 4 ? '#92400e' : '#991b1b'
+                        background: (row.engagementRate > 7) ? '#d1fae5' : (row.engagementRate > 4) ? '#fef9c3' : '#fee2e2',
+                        color: (row.engagementRate > 7) ? '#065f46' : (row.engagementRate > 4) ? '#92400e' : '#991b1b'
                       }}>
-                        {row.engagementRate > 7 ? 'Alto' : row.engagementRate > 4 ? 'Medio' : 'Bajo'}
+                        {(row.engagementRate > 7) ? 'Alto' : (row.engagementRate > 4) ? 'Medio' : 'Bajo'}
                       </span>
                     </td>
                   </tr>
