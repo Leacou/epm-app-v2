@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import getLast30DaysReport from '../api/getLast30DaysReport';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, Legend
-} from 'recharts';
-import {
-  TrendingUp, Eye, Heart, MessageCircle, Share, Bookmark, Filter, Download, Play
-} from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
+import { TrendingUp, Eye, Heart, MessageCircle, Share, Bookmark, Filter, Download, Play } from 'lucide-react';
 import { CircularProgress, Alert, Box, Typography, Button, Select, MenuItem } from '@mui/material';
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
@@ -30,22 +25,23 @@ export default function Last30DaysReport() {
 
   useEffect(() => {
     getLast30DaysReport()
-      .then(d => setData(d || []))
+      .then(d => setData(Array.isArray(d) ? d : []))
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Box textAlign="center" py={6}><CircularProgress /></Box>;
   if (error) return <Alert severity="error">{error.message}</Alert>;
-  if (!data || !Array.isArray(data) || !data.length) return <Alert severity="info">No hay datos disponibles para los últimos 30 días.</Alert>;
+  if (!Array.isArray(data) || !data.length) return <Alert severity="info">No hay datos disponibles para los últimos 30 días.</Alert>;
 
-  // Prepara los datos
-  const processedData = useMemo(() => (data ? data.map(row => ({
-    ...row,
-    engagementRate: calculateEngagement(row)
-  })) : []), [data]);
+  // Defensivo: asegúrate de que data es siempre array
+  const processedData = useMemo(() =>
+    Array.isArray(data) ? data.map(row => ({
+      ...row,
+      engagementRate: calculateEngagement(row)
+    })) : [], [data]
+  );
 
-  // KPIs
   const totalReach = processedData.reduce((sum, d) => sum + (d.reach || 0), 0);
   const totalLikes = processedData.reduce((sum, d) => sum + (d.likes || 0), 0);
   const avgEngagement = processedData.length
@@ -54,25 +50,25 @@ export default function Last30DaysReport() {
   const bestPerformer = processedData.reduce((best, d) =>
     (d.engagementRate || 0) > (best.engagementRate || 0) ? d : best, {});
 
-  // Para gráficos
-  const chartData = processedData.map(d => ({
-    date: d.date ? new Date(d.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : '',
-    engagement: d.engagementRate ?? 0,
-    reach: d.reach ?? 0,
-    likes: d.likes ?? 0,
-    interactions: (d.likes || 0) + (d.comments || 0) + (d.shares || 0) + (d.saves || 0)
-  }));
+  // Defensivo: chartData siempre array
+  const chartData = useMemo(() => (
+    Array.isArray(processedData) ? processedData.map(d => ({
+      date: d.date ? new Date(d.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : '',
+      engagement: d.engagementRate ?? 0,
+      reach: d.reach ?? 0,
+      likes: d.likes ?? 0,
+      interactions: (d.likes || 0) + (d.comments || 0) + (d.shares || 0) + (d.saves || 0)
+    })) : []
+  ), [processedData]);
 
-  // Pie engagement distribution
   const engagementDistribution = [
     { name: 'Alto (>7%)', value: processedData.filter(d => d.engagementRate > 7).length, color: COLORS[0] },
     { name: 'Medio (4-7%)', value: processedData.filter(d => d.engagementRate >= 4 && d.engagementRate <= 7).length, color: COLORS[1] },
     { name: 'Bajo (<4%)', value: processedData.filter(d => d.engagementRate < 4).length, color: COLORS[2] }
   ];
 
-  // Sorting para tabla y tarjetas
   const sortedData = useMemo(() => {
-    let arr = processedData ? [...processedData] : [];
+    let arr = Array.isArray(processedData) ? [...processedData] : [];
     switch (sortBy) {
       case 'engagement':
         arr.sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0));
@@ -93,6 +89,7 @@ export default function Last30DaysReport() {
     row.thumbnail ||
     `https://via.placeholder.com/120x120/eee/888?text=${row.date ? row.date.replace(/-/g, '/') : ''}`;
 
+  // --- COMPONENTES AUXILIARES ---
   const KPICard = ({ title, value, icon: Icon, color, subtitle }) => (
     <Box
       sx={{
@@ -146,6 +143,7 @@ export default function Last30DaysReport() {
     </Box>
   );
 
+  // --- RENDER ---
   return (
     <Box sx={{ py: 3 }}>
       {/* Header */}
@@ -237,7 +235,7 @@ export default function Last30DaysReport() {
           <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3, boxShadow: 2, mb: 4 }}>
             <Typography fontWeight={600} mb={2}>Evolución del Engagement Rate</Typography>
             <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={chartData}>
+              <LineChart data={chartData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -251,7 +249,7 @@ export default function Last30DaysReport() {
             <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3, boxShadow: 2 }}>
               <Typography fontWeight={600} mb={2}>Alcance por Día</Typography>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={chartData}>
+                <BarChart data={chartData || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
@@ -264,7 +262,7 @@ export default function Last30DaysReport() {
             <Box sx={{ bgcolor: 'white', borderRadius: 2, p: 3, boxShadow: 2 }}>
               <Typography fontWeight={600} mb={2}>Likes vs Interacciones Totales</Typography>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={chartData}>
+                <BarChart data={chartData || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
