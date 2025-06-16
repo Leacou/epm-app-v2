@@ -1,4 +1,4 @@
-export default async function postMetricas() {
+export default async function getPostMetricas() {
     // 1. Leer credenciales de localStorage
     const userToken = localStorage.getItem('epm_access_token');
     const igProfileRaw = localStorage.getItem('epm_instagram_profile');

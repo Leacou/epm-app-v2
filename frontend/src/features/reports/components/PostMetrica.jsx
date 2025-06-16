@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import postMetricas from '../api/postMetricas';
+import getPostMetricas from '../api/getPostMetricas';
 import { CircularProgress, Alert, Box, Typography } from '@mui/material';
 
 export default function PostMetricas() {
@@ -8,7 +8,7 @@ export default function PostMetricas() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    postMetricas().then(setData).catch(setError).finally(() => setLoading(false));
+    getPostMetricas().then(setData).catch(setError).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Box textAlign="center" py={6}><CircularProgress /></Box>;

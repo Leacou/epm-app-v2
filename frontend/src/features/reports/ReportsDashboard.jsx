@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AppLayout from '../../components/AppLayout'; // ajusta el path si es necesario
 import AsideMenu from './components/AsideMenu';
 import Last30DaysReport from './components/Last30DaysReport';
-import PostMetricas from './components/postMetricas';
+import PostMetricas from './components/PostMetricas';
 // import RequestCustomReportForm from './components/RequestCustomReportForm';
 import { Box, Grid } from '@mui/material';
 
