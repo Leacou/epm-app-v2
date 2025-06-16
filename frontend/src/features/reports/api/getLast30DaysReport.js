@@ -7,14 +7,11 @@ function getUnixDateNDaysAgo(n) {
   export default async function getLast30DaysReport() {
     const userToken = localStorage.getItem('epm_access_token');
     const igProfileRaw = localStorage.getItem('epm_instagram_profile');
-    console.log('[getLast30DaysReport] Token:', userToken);
-    console.log('[getLast30DaysReport] Raw Instagram Profile:', igProfileRaw);
   
     let igProfile;
     try {
       igProfile = JSON.parse(igProfileRaw);
     } catch (e) {
-      console.log('[getLast30DaysReport] Error al parsear el perfil IG:', e);
       throw new Error('Perfil de Instagram no válido');
     }
     if (!userToken || !igProfile) throw new Error('Tokens no disponibles');
@@ -40,8 +37,7 @@ function getUnixDateNDaysAgo(n) {
         date: fmt(since)
       };
     });
-  
-    console.log('[getLast30DaysReport] daysArray:', daysArray);
+
   
     const fetchDay = async ({sinceUnix, untilUnix, date}) => {
       const endpoint = `https://graph.facebook.com/v20.0/${igId}/insights?metric=${metrics.join(',')}&period=day&since=${sinceUnix}&until=${untilUnix}&metric_type=total_value&access_token=${userToken}`;
@@ -64,13 +60,11 @@ function getUnixDateNDaysAgo(n) {
         }
         return obj;
       } catch (err) {
-        console.log(`[getLast30DaysReport][${date}] ERROR:`, err);
         return { date };
       }
     };
   
     const results = await Promise.all(daysArray.map(fetchDay));
-    console.log('[getLast30DaysReport] Results before filtering:', results);
   
     const filtered = results.filter(row =>
       metrics.some(m => row[m] !== null && row[m] !== undefined)

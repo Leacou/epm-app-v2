@@ -63,10 +63,12 @@ export default function Last30DaysReport() {
     );
   };
 
-  // Fechas con formato bonito
+  // Fechas con formato bonito y bien ubicadas (sin bug de desfase)
   const chartData = data.map(row => ({
     ...row,
-    date: row.date ? new Date(row.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : ''
+    date: row.date
+      ? new Date(row.date + "T00:00:00").toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
+      : ''
   }));
 
   return (
