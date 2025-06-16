@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import getPostMetricas from '../api/getPostMetricas';
 import { CircularProgress, Alert, Box, Typography } from '@mui/material';
 
-export default function PostMetricas() {
+export default function LastPostMetricas() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
