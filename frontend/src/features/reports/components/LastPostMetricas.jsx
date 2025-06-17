@@ -86,8 +86,8 @@ export default function LastPostMetricas() {
         <Grid container spacing={3}>
           {loadingSkeletons.map((_, i) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
-              <Card sx={{ borderRadius: 4, boxShadow: 2, height: 430 }}>
-                <Skeleton variant="rectangular" animation="wave" width="100%" height={320} sx={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
+              <Card sx={{ borderRadius: 4, boxShadow: 2, height: 410 }}>
+                <Skeleton variant="rectangular" animation="wave" width="100%" height={270} sx={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
                 <Box sx={{ p: 2 }}>
                   <Skeleton width="60%" />
                   <Skeleton width="40%" />
@@ -127,9 +127,10 @@ export default function LastPostMetricas() {
           </Select>
         </FormControl>
       </Box>
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {orderedData.map(post => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={post.id}>
+            {/* Ajusta el maxWidth y height para que sean más angostas y verticales */}
             <Card
               sx={{
                 borderRadius: 4,
@@ -137,8 +138,10 @@ export default function LastPostMetricas() {
                 display: "flex",
                 flexDirection: "column",
                 bgcolor: COLORS.blanco,
-                minHeight: 430,
-                height: 430,
+                minHeight: 370,
+                height: 410,
+                maxWidth: 260, // <-- cards más angostas
+                mx: "auto", // centra la card en la celda
                 transition: "transform 0.2s, box-shadow 0.2s",
                 "&:hover": { transform: "translateY(-8px) scale(1.04)", boxShadow: "0 8px 30px 0 #08396328" }
               }}
@@ -153,11 +156,20 @@ export default function LastPostMetricas() {
                   objectFit: "cover",
                   borderTopLeftRadius: 16,
                   borderTopRightRadius: 16,
-                  height: 320,
-                  minHeight: 320
+                  height: 260,
+                  minHeight: 260
                 }}
               />
-              <CardContent sx={{ flex: 1, pb: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+              <CardContent sx={{
+                flex: 1,
+                pb: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                px: 1.2, // menos padding lateral
+                pt: 1.2, // menos padding superior
+                minHeight: 70
+              }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
                   <Tooltip title="Ver en Instagram" arrow>
                     <Button
@@ -189,12 +201,14 @@ export default function LastPostMetricas() {
                     {formatDate(post.timestamp)}
                   </Typography>
                 </Box>
+                {/* Coloca las métricas en un Box con más espacio abajo y gap más chico */}
                 <Box sx={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 1.2,
+                  gap: 0.7,
                   alignItems: "center",
-                  justifyContent: "flex-start"
+                  justifyContent: "flex-start",
+                  mb: 0.5
                 }}>
                   {Object.keys(METRIC_LABELS).map(metric =>
                     (post[metric] !== undefined) && (
@@ -211,12 +225,13 @@ export default function LastPostMetricas() {
                           bgcolor: COLORS.crema,
                           color: COLORS.azul,
                           fontWeight: 500,
-                          fontSize: 13,
-                          px: 1,
+                          fontSize: 12.5,
+                          px: 0.7,
                           borderRadius: 2,
+                          minHeight: 28, // <-- más alto para que no se corte
                           '& .MuiChip-icon': { color: COLORS.celeste, ml: 0.2 }
                         }}
-                        size="small"
+                        size="medium"
                       />
                     )
                   )}
