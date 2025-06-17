@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import getPostMetricas from '../api/getPostMetricas';
 import {
-  Box, Typography, Alert, Card, CardMedia, CardContent, CardActions,
+  Box, Typography, Alert, Card, CardMedia, CardContent,
   Button, Grid, Select, MenuItem, FormControl, InputLabel, Skeleton, Tooltip, Chip
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -86,8 +86,8 @@ export default function LastPostMetricas() {
         <Grid container spacing={3}>
           {loadingSkeletons.map((_, i) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
-              <Card sx={{ borderRadius: 4, boxShadow: 2, height: 410 }}>
-                <Skeleton variant="rectangular" animation="wave" width="100%" height={270} sx={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
+              <Card sx={{ borderRadius: 4, boxShadow: 2 }}>
+                <Skeleton variant="rectangular" animation="wave" width="100%" height={260} sx={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
                 <Box sx={{ p: 2 }}>
                   <Skeleton width="60%" />
                   <Skeleton width="40%" />
@@ -130,7 +130,6 @@ export default function LastPostMetricas() {
       <Grid container spacing={2}>
         {orderedData.map(post => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={post.id}>
-            {/* Ajusta el maxWidth y height para que sean más angostas y verticales */}
             <Card
               sx={{
                 borderRadius: 4,
@@ -138,12 +137,11 @@ export default function LastPostMetricas() {
                 display: "flex",
                 flexDirection: "column",
                 bgcolor: COLORS.blanco,
-                minHeight: 370,
-                height: 410,
-                maxWidth: 260, // <-- cards más angostas
-                mx: "auto", // centra la card en la celda
+                maxWidth: 260,
+                mx: "auto",
                 transition: "transform 0.2s, box-shadow 0.2s",
                 "&:hover": { transform: "translateY(-8px) scale(1.04)", boxShadow: "0 8px 30px 0 #08396328" }
+                // NO height ni minHeight aquí
               }}
             >
               <CardMedia
@@ -162,12 +160,12 @@ export default function LastPostMetricas() {
               />
               <CardContent sx={{
                 flex: 1,
-                pb: 1,
+                pb: 1.5, // más padding abajo
                 display: "flex",
                 flexDirection: "column",
                 gap: 1,
-                px: 1.2, // menos padding lateral
-                pt: 1.2, // menos padding superior
+                px: 1.2,
+                pt: 1.2,
                 minHeight: 70
               }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
@@ -201,7 +199,6 @@ export default function LastPostMetricas() {
                     {formatDate(post.timestamp)}
                   </Typography>
                 </Box>
-                {/* Coloca las métricas en un Box con más espacio abajo y gap más chico */}
                 <Box sx={{
                   display: "flex",
                   flexWrap: "wrap",
@@ -228,7 +225,7 @@ export default function LastPostMetricas() {
                           fontSize: 12.5,
                           px: 0.7,
                           borderRadius: 2,
-                          minHeight: 28, // <-- más alto para que no se corte
+                          minHeight: 28,
                           '& .MuiChip-icon': { color: COLORS.celeste, ml: 0.2 }
                         }}
                         size="medium"
@@ -237,11 +234,7 @@ export default function LastPostMetricas() {
                   )}
                 </Box>
               </CardContent>
-              <CardActions sx={{ pt: 0, pb: 1, justifyContent: "flex-end" }}>
-                <Typography variant="caption" color="#888" ml="auto">
-                  Consultado: {post.fecha_consulta ? post.fecha_consulta.slice(0, 16) : ""}
-                </Typography>
-              </CardActions>
+              {/* CardActions eliminado */}
             </Card>
           </Grid>
         ))}
