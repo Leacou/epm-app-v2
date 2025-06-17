@@ -65,7 +65,6 @@ export default function AppLayout({ children }) {
             src="/img/epm.jpg" // URL de la imagen
             alt= "LC" // Texto alternativo
             sx={{
-              bgcolor: 'secondary.main',
               color: 'white',
               mr: 2,
               fontWeight: 700,
@@ -93,7 +92,7 @@ export default function AppLayout({ children }) {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    color: 'white',
+                    color: "#fff", // <-- Cambia a blanco
                     textDecoration: "none",
                     cursor: 'pointer',
                     fontWeight: 500,
@@ -102,6 +101,7 @@ export default function AppLayout({ children }) {
                   }}
                 >
                   {item.icon}
+                  {/* No hace falta poner color en Typography, hereda del Box */}
                   <Typography variant="body1" sx={{ ml: 1 }}>{item.text}</Typography>
                 </Box>
               ))
