@@ -62,7 +62,7 @@ export default function AppLayout({ children }) {
 
           {/* Avatar/logo de la app */}
           <Avatar
-            src="/EPM app v2/frontend/public/img/epm.jpg" // URL de la imagen
+            src="/img/epm.jpg" // URL de la imagen
             alt= "LC" // Texto alternativo
             sx={{
               bgcolor: 'secondary.main',
@@ -93,7 +93,7 @@ export default function AppLayout({ children }) {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    color: "inherit",
+                    color: 'white',
                     textDecoration: "none",
                     cursor: 'pointer',
                     fontWeight: 500,

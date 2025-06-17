@@ -44,9 +44,7 @@ function getUnixDateNDaysAgo(n) {
       console.log(`[getLast30DaysReport][${date}] Fetching URL:`, endpoint);
       try {
         const response = await fetch(endpoint);
-        console.log(`[getLast30DaysReport][${date}] Response status:`, response.status, 'OK?', response.ok);
         const data = await response.json();
-        console.log(`[getLast30DaysReport][${date}] API response:`, data);
         const obj = { date };
         if (Array.isArray(data.data)) {
           metrics.forEach(metricName => {
@@ -69,7 +67,6 @@ function getUnixDateNDaysAgo(n) {
     const filtered = results.filter(row =>
       metrics.some(m => row[m] !== null && row[m] !== undefined)
     );
-  
-    console.log('[getLast30DaysReport] Filtered chart data:', filtered);
+    
     return filtered;
   }
