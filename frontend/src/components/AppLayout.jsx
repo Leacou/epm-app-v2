@@ -9,7 +9,6 @@ import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Link, useNavigate } from "react-router-dom";
-<Avatar src="/EPM app v2/frontend/public/img/epm.jpg" alt = "LC"/>
 
 // Lista de ítems del menú principal, cada uno con texto, icono y ruta de navegación
 const menuItems = [
@@ -63,7 +62,7 @@ export default function AppLayout({ children }) {
 
           {/* Avatar/logo de la app */}
           <Avatar
-            src={profilePicture} // URL de la imagen
+            src="/EPM app v2/frontend/public/img/epm.jpg" // URL de la imagen
             alt= "LC" // Texto alternativo
             sx={{
               bgcolor: 'secondary.main',
@@ -75,9 +74,7 @@ export default function AppLayout({ children }) {
               height: 48,
               boxShadow: '0 2px 8px rgba(8,57,99,0.10)'
             }}
-          >
-            {!profilePicture && username ? username[0].toUpperCase() : ""}
-          </Avatar>
+          />
 
           {/* Nombre de la app */}
           <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, letterSpacing: 1 }}>
