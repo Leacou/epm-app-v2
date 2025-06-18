@@ -8,7 +8,7 @@ const REQUEST_TYPES = [
 ];
 
 // Pega aquí tu URL del webhook de Google Apps Script
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyUKrmxts_UY8OdWJKVjC436z58D5EedN6mEwo9aOy8sX7yr1a_1r7mIG-kIxeZVIE/exec";
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxWyD--ldi4NCbyo18B2ho5-SbdV5U_TjnVPBhkOKskr8sjzZENPwVCAQFOWJvcick/exec";
 
 export default function SolicitaReporte() {
   const [form, setForm] = useState({
