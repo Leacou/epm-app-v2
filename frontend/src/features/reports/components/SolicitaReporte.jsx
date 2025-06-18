@@ -34,7 +34,7 @@ export default function SolicitaReporte() {
       const res = await fetch(WEBHOOK_URL, {
         redirect: "follow",
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       const result = await res.json().catch(() => null);
