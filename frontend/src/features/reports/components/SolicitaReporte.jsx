@@ -8,7 +8,7 @@ const REQUEST_TYPES = [
 ];
 
 // Pega aquí tu URL del webhook de Google Apps Script
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyuLy5IbitDnc6yihWt2FkG_vzBSm5C8FVGLXO_cI9GHN3PoLtVUy7zKPKf-cdZ8Ps/exec";
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwF-v0V3_CFrrr_DbpVYuePutXvfisl4BcsvsCE8rN9y9V7YExDz9kdAERb6Y27BA/exec";
 
 export default function SolicitaReporte() {
   const [form, setForm] = useState({
@@ -33,18 +33,21 @@ export default function SolicitaReporte() {
     try {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) {
+      const result = await res.json().catch(() => null);
+      console.log("Respuesta del webhook:", result);
+  
+      if (res.ok && result && result.status === "ok") {
         setSuccess(true);
         setForm({ nombre: "", email: "", tipo: "reporte_nuevo", mensaje: "" });
       } else {
-        setError("No se pudo enviar la solicitud. Intenta de nuevo.");
+        setError(result?.message || "No se pudo enviar la solicitud. Intenta de nuevo.");
       }
     } catch (err) {
       setError("Error de red al enviar la solicitud.");
+      console.error("Error en fetch:", err);
     }
     setLoading(false);
   };
