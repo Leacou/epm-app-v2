@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 const menuItems = [
   { text: 'Inicio', icon: <HomeIcon />, link: '/' },
   { text: 'Cuentas', icon: <InstagramIcon />, link: '/accounts' },
-  { text: 'Sobre la app', icon: <InfoIcon />, link: '/about' },
+  { text: 'Productos', icon: <InfoIcon />, link: '/user-home' },
   // Puedes agregar más links aquí
 ];
 
@@ -102,7 +102,7 @@ export default function AppLayout({ children }) {
                 >
                   {item.icon}
                   {/* No hace falta poner color en Typography, hereda del Box */}
-                  <Typography variant="body1" sx={{ ml: 1 }}>{item.text}</Typography>
+                  <Typography variant="body1" sx={{ ml: 1, color: "#fff" }}>{item.text}</Typography>
                 </Box>
               ))
             }
