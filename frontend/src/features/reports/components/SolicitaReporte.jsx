@@ -33,6 +33,7 @@ export default function SolicitaReporte() {
     try {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
