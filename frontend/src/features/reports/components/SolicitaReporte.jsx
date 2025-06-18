@@ -8,7 +8,7 @@ const REQUEST_TYPES = [
 ];
 
 // Pega aquí tu URL del webhook de Google Apps Script
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwF-v0V3_CFrrr_DbpVYuePutXvfisl4BcsvsCE8rN9y9V7YExDz9kdAERb6Y27BA/exec";
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyUKrmxts_UY8OdWJKVjC436z58D5EedN6mEwo9aOy8sX7yr1a_1r7mIG-kIxeZVIE/exec";
 
 export default function SolicitaReporte() {
   const [form, setForm] = useState({
@@ -32,6 +32,7 @@ export default function SolicitaReporte() {
     setSuccess(false);
     try {
       const res = await fetch(WEBHOOK_URL, {
+        redirect: "follow",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
