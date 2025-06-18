@@ -3,6 +3,7 @@ import AppLayout from '../../components/AppLayout';
 import AsideMenu from './components/AsideMenu';
 import Last30DaysReport from './components/Last30DaysReport';
 import LastPostMetricas from './components/LastPostMetricas';
+import SolicitaReporte from './components/SolicitaReporte';
 // import RequestCustomReportForm from './components/RequestCustomReportForm';
 import { Box, Grid } from '@mui/material';
 
@@ -46,7 +47,7 @@ export default function ReportsDashboard() {
           <Box sx={{ p: { xs: 1, sm: 3, md: 6 }, flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 1200, mx: "auto" }}>
             {selectedMenu === 'last30' && <Last30DaysReport />}
             {selectedMenu === 'lastPosts' && <LastPostMetricas />}
-            {/* {selectedMenu === 'custom' && <RequestCustomReportForm />} */}
+            {selectedMenu === 'Solicitareportes' && <SolicitaReporte />}
           </Box>
         </Grid>
       </Grid>

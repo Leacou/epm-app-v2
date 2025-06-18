@@ -10,7 +10,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 const menuItems = [
   { key: 'last30', label: 'Últimos 30 días', icon: <TimelineIcon sx={{ color: "#083963" }} /> },
   { key: 'lastPosts', label: 'Últimas publicaciones', icon: <MovieIcon sx={{ color: "#EB8957" }} /> },
-  { key: 'custom', label: 'Solicita tu reporte', icon: <AssignmentIcon sx={{ color: "#5DA9DD" }} /> }
+  { key: 'Solicitareportes', label: 'Solicita tu reporte', icon: <AssignmentIcon sx={{ color: "#5DA9DD" }} /> }
 ];
 
 export default function AsideMenu({ selected, onSelect }) {
