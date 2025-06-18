@@ -34,14 +34,13 @@ function getUnixDateNDaysAgo(n) {
       return {
         sinceUnix: Math.floor(since.getTime() / 1000),
         untilUnix: Math.floor(until.getTime() / 1000),
-        date: fmt(since)
+        date: fmt(until)
       };
     });
 
   
     const fetchDay = async ({sinceUnix, untilUnix, date}) => {
       const endpoint = `https://graph.facebook.com/v20.0/${igId}/insights?metric=${metrics.join(',')}&period=day&since=${sinceUnix}&until=${untilUnix}&metric_type=total_value&access_token=${userToken}`;
-      console.log(`[getLast30DaysReport][${date}] Fetching URL:`, endpoint);
       try {
         const response = await fetch(endpoint);
         const data = await response.json();
@@ -67,6 +66,7 @@ function getUnixDateNDaysAgo(n) {
     const filtered = results.filter(row =>
       metrics.some(m => row[m] !== null && row[m] !== undefined)
     );
-    
+  
+    console.log('Filtered results:', filtered);  
     return filtered;
   }
