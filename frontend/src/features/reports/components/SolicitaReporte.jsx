@@ -7,8 +7,8 @@ const REQUEST_TYPES = [
   { value: "otro", label: "Otro" },
 ];
 
-// Pega aquí tu URL del webhook de Google Apps Script
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw-9mqKQqVkwmj0YtSWTZbl6LUNPuX3-g5sYcxZebuyTPCPaBpqURHi2mgDsrewAvM/exec";
+// URL del webhook de Google Apps Script
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyUIy1y6Kwane6V9D9Yl-kL33995le9glm97njpgTRCKMILIwRNS5Fxi7K569fS_Lo/exec";
 
 export default function SolicitaReporte() {
   const [form, setForm] = useState({
@@ -30,27 +30,81 @@ export default function SolicitaReporte() {
     setLoading(true);
     setError("");
     setSuccess(false);
+
     try {
-      const res = await fetch(WEBHOOK_URL, {
-        redirect: "follow",
+      console.log("Enviando datos:", form);
+      
+      // Agregamos timestamp para evitar cache
+      const dataToSend = {
+        ...form,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      };
+      
+      const response = await fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(dataToSend),
+        mode: "cors", // Explícitamente especificamos CORS
+        cache: "no-cache" // Evitamos problemas de cache
       });
-      const result = await res.json().catch(() => null);
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
+      // Verificamos si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Intentamos parsear la respuesta como JSON
+      let result;
+      const contentType = response.headers.get("content-type");
+      
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        // Si no es JSON, obtenemos el texto
+        const text = await response.text();
+        console.log("Response text:", text);
+        
+        // Intentamos parsear el texto como JSON por si acaso
+        try {
+          result = JSON.parse(text);
+        } catch {
+          result = { status: "ok", message: "Respuesta recibida pero no es JSON válido" };
+        }
+      }
+
       console.log("Respuesta del webhook:", result);
-  
-      if (res.ok && result && result.status === "ok") {
+
+      // Verificamos el estado de la respuesta
+      if (result && (result.status === "ok" || result.status === "success")) {
         setSuccess(true);
         setForm({ nombre: "", email: "", tipo: "reporte_nuevo", mensaje: "" });
       } else {
-        setError(result?.message || "No se pudo enviar la solicitud. Intenta de nuevo.");
+        setError(result?.message || "Error desconocido al procesar la solicitud.");
       }
+
     } catch (err) {
-      setError("Error de red al enviar la solicitud.");
-      console.error("Error en fetch:", err);
+      console.error("Error completo:", err);
+      
+      // Diferentes tipos de errores
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError("Error de conexión. Verifica tu conexión a internet y vuelve a intentar.");
+      } else if (err.message.includes('CORS')) {
+        setError("Error de configuración del servidor. Por favor contacta al administrador.");
+      } else if (err.message.includes('NetworkError')) {
+        setError("Error de red. Verifica tu conexión e intenta nuevamente.");
+      } else {
+        setError(`Error al enviar la solicitud: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -70,6 +124,7 @@ export default function SolicitaReporte() {
       <Typography variant="h5" mb={2} fontWeight={700}>
         Solicita un reporte o modificación
       </Typography>
+      
       <TextField
         label="Tu nombre"
         name="nombre"
@@ -79,6 +134,7 @@ export default function SolicitaReporte() {
         required
         sx={{ mb: 2 }}
       />
+      
       <TextField
         label="Email de contacto"
         name="email"
@@ -89,6 +145,7 @@ export default function SolicitaReporte() {
         type="email"
         sx={{ mb: 2 }}
       />
+      
       <TextField
         select
         label="Tipo de solicitud"
@@ -99,9 +156,12 @@ export default function SolicitaReporte() {
         sx={{ mb: 2 }}
       >
         {REQUEST_TYPES.map(opt => (
-          <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+          <MenuItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </MenuItem>
         ))}
       </TextField>
+      
       <TextField
         label="Describí tu solicitud"
         name="mensaje"
@@ -113,11 +173,33 @@ export default function SolicitaReporte() {
         minRows={3}
         sx={{ mb: 2 }}
       />
-      {loading && <CircularProgress size={24} sx={{ mb: 2 }} />}
-      {success && <Alert severity="success" sx={{ mb: 2 }}>¡Solicitud enviada con éxito!</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Button type="submit" variant="contained" fullWidth disabled={loading}>
-        Enviar solicitud
+      
+      {loading && (
+        <Box display="flex" justifyContent="center" mb={2}>
+          <CircularProgress size={24} />
+        </Box>
+      )}
+      
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          ¡Solicitud enviada con éxito! Nos pondremos en contacto contigo pronto.
+        </Alert>
+      )}
+      
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      <Button 
+        type="submit" 
+        variant="contained" 
+        fullWidth 
+        disabled={loading}
+        sx={{ mt: 1 }}
+      >
+        {loading ? "Enviando..." : "Enviar solicitud"}
       </Button>
     </Box>
   );
