@@ -8,7 +8,7 @@ const REQUEST_TYPES = [
 ];
 
 // URL del webhook de Google Apps Script
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyUIy1y6Kwane6V9D9Yl-kL33995le9glm97njpgTRCKMILIwRNS5Fxi7K569fS_Lo/exec";
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL_YpJKOFKPVeHuVTIspdH0-NQHIjc31B7GyBQOOxSlN236y1mpDD4WZ5dDexc7i0/exec";
 
 export default function SolicitaReporte() {
   const [form, setForm] = useState({
@@ -41,15 +41,16 @@ export default function SolicitaReporte() {
         userAgent: navigator.userAgent
       };
       
+      // SOLUCIÓN: Usamos FormData para evitar preflight OPTIONS
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(dataToSend));
+      
       const response = await fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(dataToSend),
-        mode: "cors", // Explícitamente especificamos CORS
-        cache: "no-cache" // Evitamos problemas de cache
+        body: formData,
+        mode: "cors",
+        cache: "no-cache"
+        // NO incluimos Content-Type header para evitar preflight
       });
 
       console.log("Response status:", response.status);
