@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   AppBar, Toolbar, Typography, Box, Container, CssBaseline, Avatar,
-  IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider
+  IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Button
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -9,36 +9,29 @@ import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Link, useNavigate } from "react-router-dom";
+import { getAccessToken, clearAccessToken } from '../utils/auth';
 
-// Lista de ítems del menú principal, cada uno con texto, icono y ruta de navegación
 const menuItems = [
   { text: 'Inicio', icon: <HomeIcon />, link: '/' },
   { text: 'Cuentas', icon: <InstagramIcon />, link: '/accounts' },
   { text: 'Productos', icon: <InfoIcon />, link: '/user-home' },
-  // Puedes agregar más links aquí
 ];
 
 export default function AppLayout({ children }) {
-  // Estado para controlar si el Drawer (menú lateral mobile) está abierto/cerrado
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // Hook de react-router para navegación programática
   const navigate = useNavigate();
+  const isLoggedIn = !!getAccessToken();
 
-  // Función para abrir/cerrar el Drawer
   const handleDrawer = (open) => () => setDrawerOpen(open);
 
-  // Lógica de logout: limpia localStorage y redirige a inicio
   const handleLogout = () => {
-    localStorage.clear();
+    clearAccessToken();
     navigate('/');
   };
 
   return (
     <>
-      {/* Normaliza estilos base de la app */}
       <CssBaseline />
-
-      {/* Barra superior de navegación */}
       <AppBar
         position="static"
         elevation={0}
@@ -49,7 +42,6 @@ export default function AppLayout({ children }) {
         }}
       >
         <Toolbar>
-          {/* Botón para abrir el menú lateral (solo visible en mobile) */}
           <IconButton
             color="inherit"
             edge="start"
@@ -59,11 +51,9 @@ export default function AppLayout({ children }) {
           >
             <MenuIcon />
           </IconButton>
-
-          {/* Avatar/logo de la app */}
           <Avatar
-            src="/img/epm.jpg" // URL de la imagen
-            alt= "LC" // Texto alternativo
+            src="/img/epm.jpg"
+            alt= "LC"
             sx={{
               color: 'white',
               mr: 2,
@@ -74,17 +64,13 @@ export default function AppLayout({ children }) {
               boxShadow: '0 2px 8px rgba(8,57,99,0.10)'
             }}
           />
-
-          {/* Nombre de la app */}
           <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, letterSpacing: 1 }}>
             EPM App
           </Typography>
 
-          {/* Menú principal (horizontal) solo visible en desktop */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }}>
-            {
-              // Renderiza cada ítem del menú con su icono y texto, usando Link de react-router-dom
-              menuItems.map((item) => (
+          {isLoggedIn ? (
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }}>
+              {menuItems.map((item) => (
                 <Box
                   key={item.text}
                   component={Link}
@@ -92,7 +78,7 @@ export default function AppLayout({ children }) {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    color: "#fff", // <-- Cambia a blanco
+                    color: "#fff",
                     textDecoration: "none",
                     cursor: 'pointer',
                     fontWeight: 500,
@@ -101,43 +87,56 @@ export default function AppLayout({ children }) {
                   }}
                 >
                   {item.icon}
-                  {/* No hace falta poner color en Typography, hereda del Box */}
                   <Typography variant="body1" sx={{ ml: 1, color: "#fff" }}>{item.text}</Typography>
                 </Box>
-              ))
-            }
-            {/* Botón de logout, siempre visible en la barra */}
-            <IconButton color="inherit" sx={{ ml: 2 }} onClick={handleLogout}>
-              <LogoutIcon />
-            </IconButton>
-          </Box>
+              ))}
+              <IconButton color="inherit" sx={{ ml: 2 }} onClick={handleLogout}>
+                <LogoutIcon />
+              </IconButton>
+            </Box>
+          ) : (
+            // Opcional: Mostrar botón para volver a la landing si está en otra página
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }}>
+              <Button
+                component={Link}
+                to="/"
+                color="inherit"
+                variant="outlined"
+                sx={{
+                  borderColor: "#fff",
+                  color: "#fff",
+                  fontWeight: 500,
+                  '&:hover': { borderColor: 'secondary.main', color: 'secondary.main' }
+                }}
+              >
+                Ir a inicio
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
 
-      {/* Drawer (menú lateral para mobile) */}
-      <Drawer anchor="left" open={drawerOpen} onClose={handleDrawer(false)}>
-        <Box sx={{ width: 220 }} role="presentation" onClick={handleDrawer(false)}>
-          <List>
-            {
-              // Renderiza los mismos ítems del menú, ahora en formato vertical para mobile
-              menuItems.map((item) => (
+      {/* Drawer para mobile SOLO si está logueado */}
+      {isLoggedIn && (
+        <Drawer anchor="left" open={drawerOpen} onClose={handleDrawer(false)}>
+          <Box sx={{ width: 220 }} role="presentation" onClick={handleDrawer(false)}>
+            <List>
+              {menuItems.map((item) => (
                 <ListItem button key={item.text} component={Link} to={item.link}>
                   <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItem>
-              ))
-            }
-            <Divider />
-            {/* Opción de logout en el drawer */}
-            <ListItem button onClick={handleLogout}>
-              <ListItemIcon sx={{ minWidth: 36 }}><LogoutIcon /></ListItemIcon>
-              <ListItemText primary="Cerrar sesión" />
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
+              ))}
+              <Divider />
+              <ListItem button onClick={handleLogout}>
+                <ListItemIcon sx={{ minWidth: 36 }}><LogoutIcon /></ListItemIcon>
+                <ListItemText primary="Cerrar sesión" />
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
+      )}
 
-      {/* Contenedor principal del contenido de la app */}
       <Box
         sx={{
           bgcolor: '#EBE4DD',
@@ -156,7 +155,6 @@ export default function AppLayout({ children }) {
             py: { xs: 2, md: 4 },
           }}
         >
-          {/* Aquí se renderizan los hijos del layout, es decir, la página específica */}
           {children}
         </Container>
       </Box>
