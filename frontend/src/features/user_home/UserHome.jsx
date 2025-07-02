@@ -7,6 +7,20 @@ import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate } from "react-router-dom";
 
+// Helper function to get query parameters from localStorage
+const getMentoriaRedirectUrl = () => {
+  // Retrieve the object from localStorage
+  const instagramProfile = JSON.parse(localStorage.getItem("epm_instagram_profile"));
+
+  // Access specific properties
+  const ig_id = instagramProfile.id;
+  const ig_name = instagramProfile.name;
+  const ig_picture = instagramProfile.profile_picture_url;
+  const long_lived_token = localStorage.getItem("epm_access_token");
+
+  return `https://epm-mentoria.onrender.com/?ig_id=${ig_id}&ig_name=${ig_name}&ig_picture=${ig_picture}&long_lived_token=${long_lived_token}`;
+};
+
 // Configuración de los productos disponibles
 const products = [
   {
@@ -19,7 +33,7 @@ const products = [
     name: "Mentoría",
     description: "Agenda sesiones y recibe asesoramiento personalizado.",
     icon: <SchoolIcon fontSize="large" sx={{ color: "#43B97F" }} />,
-    redirect: "/mentoria",
+    redirect: getMentoriaRedirectUrl(), // Dynamically generated URL
   },
   {
     name: "Estrategia de contenido",
@@ -29,8 +43,8 @@ const products = [
   },
   {
     name: "Configuración",
-    description: "Gestiona la configuración de tu cuenta y productos.",
-    icon: <SettingsIcon fontSize="large" sx={{ color: "#888" }} />,
+    description: "Administra tu cuenta y preferencias.",
+    icon: <SettingsIcon fontSize="large" sx={{ color: "#FF6B6B" }} />,
     redirect: "/configuracion",
   },
 ];
