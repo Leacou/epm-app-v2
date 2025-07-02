@@ -14,8 +14,8 @@ const getMentoriaRedirectUrl = () => {
 
   // Access specific properties
   const ig_id = instagramProfile.id;
-  const ig_name = instagramProfile.name;
-  const ig_picture = instagramProfile.profile_picture_url;
+  const ig_name = encodeURIComponent(instagramProfile.name); // Encode special characters
+  const ig_picture = encodeURIComponent(instagramProfile.profile_picture_url); // Encode special characters
   const long_lived_token = localStorage.getItem("epm_access_token");
 
   return `https://epm-mentoria.onrender.com/?ig_id=${ig_id}&ig_name=${ig_name}&ig_picture=${ig_picture}&long_lived_token=${long_lived_token}`;
@@ -80,9 +80,14 @@ export default function UserHome() {
                   bgcolor: "background.paper",
                 }}
                 onClick={() => {
-                    console.log('navigate:', navigate, typeof navigate);
+                  if (prod.name === "Mentoría") {
+                    // Redirect to the absolute URL for "Mentoría"
+                    window.location.href = getMentoriaRedirectUrl();
+                  } else {
+                    // Use navigate for relative URLs
                     navigate(prod.redirect);
-                  }}
+                  }
+                }}
               >
                 <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                   <Avatar sx={{ width: 56, height: 56, bgcolor: "#F5F6FA", mb: 1 }}>
