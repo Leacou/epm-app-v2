@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 const getMentoriaRedirectUrl = () => {
   // Retrieve the object from localStorage
   const instagramProfile = JSON.parse(localStorage.getItem("epm_instagram_profile"));
+  // Si no existe info, retorna null
+  if (!instagramProfile) return null;
 
   // Access specific properties
   const ig_id = instagramProfile.id;
@@ -33,7 +35,8 @@ const products = [
     name: "Mentoría",
     description: "Agenda sesiones y recibe asesoramiento personalizado.",
     icon: <SchoolIcon fontSize="large" sx={{ color: "#43B97F" }} />,
-    redirect: getMentoriaRedirectUrl(), // Dynamically generated URL
+    // redirect: getMentoriaRedirectUrl(), // <-- NO LLAMES AQUÍ LA FUNCIÓN
+    redirect: "mentoria_func", // Usamos un placeholder para identificar el producto
   },
   {
     name: "Estrategia de contenido",
@@ -51,7 +54,6 @@ const products = [
 
 export default function UserHome() {
   const navigate = useNavigate();
-  // Podés traer datos de la cuenta IG seleccionada si querés personalizar
 
   return (
     <AppLayout>
@@ -81,10 +83,16 @@ export default function UserHome() {
                 }}
                 onClick={() => {
                   if (prod.name === "Mentoría") {
-                    // Redirect to the absolute URL for "Mentoría"
-                    window.location.href = getMentoriaRedirectUrl();
+                    // Solo redirige si la info está en localStorage
+                    const mentoriaUrl = getMentoriaRedirectUrl();
+                    if (mentoriaUrl) {
+                      window.location.href = mentoriaUrl;
+                    } else {
+                      // Muestra un mensaje, o redirige al login
+                      alert("Por favor, inicia sesión con Instagram antes de acceder a Mentoría.");
+                      navigate("/login"); // O la ruta que corresponda
+                    }
                   } else {
-                    // Use navigate for relative URLs
                     navigate(prod.redirect);
                   }
                 }}
