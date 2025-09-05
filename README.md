@@ -103,10 +103,5 @@ EPM App v2 permite a agencias y emprendedores conectar sus cuentas de Instagram,
 - Abre un issue en este repositorio.
 - Contacto: [leacou@gmail.com](mailto:leacou@gmail.com)
 
----
-
-## Licencia
-
-Este proyecto está bajo licencia MIT. Ver archivo LICENSE.
 
 ---
